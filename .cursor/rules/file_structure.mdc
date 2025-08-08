@@ -1,0 +1,56 @@
+---
+description: Flutter project file structure
+---
+# File Structure Guidelines
+
+## Core Files
+- `lib/main.dart`: Application entry point
+- `lib/app_theme.dart`: Global theme configuration
+- `lib/routes.dart`: App navigation routes
+
+## Feature Modules
+Each feature should have its own directory with these components:
+- `lib/photo_editor/`: Photo editing functionality
+- `lib/journal/`: Good things journal functionality
+- `lib/tea_tracker/`: Bubble tea tracking functionality
+- `lib/settings/`: App settings functionality
+
+## Shared Components
+- `lib/shared/`: Reusable widgets and utilities
+  - `app_colors.dart`: Color constants
+  - `app_text_styles.dart`: Typography styles
+  - `glass_card_widget.dart`: Frosted glass effect widget
+
+## Models
+- `lib/models/`: Data models
+  - Model classes should be defined in their own files
+  - Follow naming convention: `model_name.dart`
+
+## Example Structure
+```
+lib/
+├── main.dart
+├── app_theme.dart
+├── routes.dart
+├── models/
+│   ├── edited_photo.dart
+│   ├── journal_entry.dart
+│   ├── tea_record.dart
+│   └── user_profile.dart
+├── photo_editor/
+│   ├── photo_editor_screen.dart
+│   └── photo_editor_controller.dart
+├── journal/
+│   ├── journal_screen.dart
+│   └── journal_controller.dart
+├── tea_tracker/
+│   ├── tea_tracker_screen.dart
+│   └── tea_tracker_controller.dart
+├── settings/
+│   ├── settings_screen.dart
+│   └── settings_controller.dart
+└── shared/
+    ├── app_colors.dart
+    ├── app_text_styles.dart
+    └── glass_card_widget.dart
+```

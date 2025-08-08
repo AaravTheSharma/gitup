@@ -1,0 +1,32 @@
+---
+globs: *.dart
+---
+# Dart Code Style Guidelines
+
+## General Style
+- Follow Flutter's style guide and best practices
+- Use camelCase for variables and methods
+- Use PascalCase for classes and enums
+- Keep methods short and focused on a single responsibility
+- Add appropriate comments for complex logic
+
+## UI Components
+- Create reusable widgets for common UI elements
+- Use the glass_card_widget for frosted glass effect components
+- Follow the app's color scheme defined in app_colors.dart
+- Maintain consistent text styles from app_text_styles.dart
+
+## Models
+- Create immutable model classes with final fields
+- Implement toString(), ==, and hashCode for all model classes
+- Include factory constructors for JSON serialization/deserialization
+- Do not use freezed package or part syntax
+
+## State Management
+- Use setState for state management
+- Keep widget state localized when possible
+- Use controllers for complex state logic
+
+## Data Storage
+- Use shared_preferences for simple data storage
+- Implement proper error handling for all I/O operations
