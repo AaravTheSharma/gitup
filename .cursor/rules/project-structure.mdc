@@ -1,0 +1,30 @@
+---
+alwaysApply: true
+---
+# Doraplexis Project Structure
+
+This Flutter app follows a clean architecture with the following structure:
+
+## Entry Points
+- [lib/main.dart](mdc:lib/main.dart): Main entry point of the application
+- [lib/app.dart](mdc:lib/app.dart): App configuration and routing
+
+## Feature Screens
+- [lib/screens/home_screen.dart](mdc:lib/screens/home_screen.dart): Main container with navigation
+- [lib/screens/women_health_screen.dart](mdc:lib/screens/women_health_screen.dart): Menstrual cycle tracking
+- [lib/screens/fashion_expense_screen.dart](mdc:lib/screens/fashion_expense_screen.dart): Fashion expense tracking
+- [lib/screens/storage_organizer_screen.dart](mdc:lib/screens/storage_organizer_screen.dart): Item storage management
+
+## Widget Organization
+- [lib/widgets/cycle_tracker_widget.dart](mdc:lib/widgets/cycle_tracker_widget.dart)
+- [lib/widgets/expense_chart_widget.dart](mdc:lib/widgets/expense_chart_widget.dart)
+- [lib/widgets/pie_chart_widget.dart](mdc:lib/widgets/pie_chart_widget.dart)
+- [lib/widgets/reminder_card_widget.dart](mdc:lib/widgets/reminder_card_widget.dart)
+
+## Domain Layer
+- [lib/models/](mdc:lib/models/): Data models
+- [lib/providers/](mdc:lib/providers/): State management
+
+## Data Layer
+- [lib/repositories/](mdc:lib/repositories/): Data repositories
+- [lib/local_storage/](mdc:lib/local_storage/): Local storage implementation

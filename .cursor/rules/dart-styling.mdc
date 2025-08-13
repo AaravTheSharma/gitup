@@ -1,0 +1,26 @@
+---
+globs: *.dart
+---
+# Dart Styling Guidelines for Doraplexis
+
+1. **State Management**: Use `setState` for state management as specified in the requirements
+2. **Do NOT use**:
+   - No `freezed` package
+   - No `part` syntax
+   - No external fonts
+   - No `cached_network_image`
+   - No account functionality
+
+3. **Local Storage**: Use `shared_preferences` for data persistence
+
+4. **Design Requirements**:
+   - Follow dark theme palette:
+     - Deep sea teal: #0A2E36
+     - Obsidian black: #121212
+     - Twilight blue: #0F1A2F
+     - Teal accent: #00B4A0
+     - Light cyan: #E0F7FA
+   - Use BoxShadow and BorderRadius for card styling
+   - Implement subtle animations for better user experience
+
+5. **Language**: App must be in Chinese (中文)
