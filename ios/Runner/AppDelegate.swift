@@ -11,7 +11,16 @@ import InMobiSDK
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    
+      // 唯一且优化的ATT请求（延迟3.5秒）
+         DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+             if #available(iOS 14, *) {
+                 ATTrackingManager.requestTrackingAuthorization { status in
+                     // 处理授权结果
+                 }
+             }
+         }
+
+
     // 设置方法通道
     setupMethodChannel()
     
