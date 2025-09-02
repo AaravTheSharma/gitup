@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clarity - Decision Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #2563EB;
+            --primary-light: #3B82F6;
+            --primary-dark: #1D4ED8;
+            --secondary: #10B981;
+            --danger: #EF4444;
+            --background: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+        }
+
+        .dark-theme {
+            --background: #1E293B;
+            --surface: #334155;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #EFF6FF;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .iphone-frame {
+            width: 390px;
+            height: 844px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .screen-container {
+            flex: 1;
+            background-color: var(--background);
+            margin: 8px;
+            border-radius: 36px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease;
+        }
+        
+        .status-bar {
+            height: 44px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .app-content::-webkit-scrollbar {
+            width: 0px;
+        }
+        
+        .nav-bar {
+            height: 84px;
+            background-color: var(--surface);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #E5E7EB;
+            padding-bottom: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .dark-theme .nav-bar {
+             border-top: 1px solid #475569;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        
+        .floating-button {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            position: absolute;
+            bottom: 94px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+        }
+        
+        .card {
+            background-color: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease;
+        }
+        
+        .decision-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        .archived-card {
+            border-left: 4px solid var(--text-secondary);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #E5E7EB;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 3px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+        
+        .dimension-pill {
+            display: inline-block;
+            background-color: #EFF6FF;
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 0 8px 8px 0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .dimension-pill:hover {
+            background-color: #DBEAFE;
+        }
+        
+        .dimension-pill.selected {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #E5E7EB;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            margin: 20px 0;
+        }
+        
+        .option-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        
+        .option-1 {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+        
+        .option-2 {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+        
+        .score-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #E5E7EB;
+            background: white;
+            color: #334155;
+        }
+        
+        .score-btn.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .score-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .template-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background-color: #CBD5E1;
+            border-radius: 14px;
+            padding: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background-color: var(--primary);
+        }
+
+        .toggle-knob {
+            width: 22px;
+            height: 22px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(22px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .privacy-notice {
+            background-color: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #92400E;
+        }
+    </style>
+</head>
+<body>
+    <div class="iphone-frame">
+        <div class="screen-container" id="screen-container">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <span>9:41</span>
+                <div>
+                    <i class="fas fa-signal"></i>
+                    <i class="fas fa-wifi" style="margin-left: 5px;"></i>
+                    <i class="fas fa-battery-full" style="margin-left: 5px;"></i>
+                </div>
+            </div>
+            
+            <!-- App Content -->
+            <div class="app-content">
+                <!-- Dashboard Page -->
+                <div class="page active" id="dashboard-page">
+                    <h1 class="text-2xl font-bold mb-2" style="color: var(--primary);">Clarity</h1>
+                    <p class="text-sm text-gray-500 mb-6">Navigate your choices. With clarity and privacy.</p>
+                    
+                    <div class="card pulse">
+                        <h2 class="text-lg font-semibold mb-4">Welcome back!</h2>
+                        <p class="text-sm text-gray-600 mb-4">Ready to clarify your next important decision?</p>
+                        <div class="btn-primary" onclick="navigateToPage('templates-page')">
+                            <i class="fas fa-plus-circle mr-2"></i> New Decision
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-lg font-semibold mt-8 mb-4">Recent Decisions</h2>
+                    
+                    <div class="card decision-card" onclick="navigateToPage('report-page')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold">Accept new job offer</h3>
+                                <p class="text-sm text-gray-500">3 days ago</p>
+                            </div>
+                            <span class="text-xs font-semibold py-1 px-2 rounded-full" style="background-color: #10B98120; color: var(--secondary);">Completed</span>
+                        </div>
+                        <div class="progress-bar mt-4">
+                            <div class="progress-fill" style="width: 75%;"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Current job</span>
+                            <span>New offer</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card decision-card" onclick="navigateToPage('report-page')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold">Buy apartment vs continue renting</h3>
+                                <p class="text-sm text-gray-500">1 week ago</p>
+                            </div>
+                            <span class="text-xs font-semibold py-1 px-2 rounded-full" style="background-color: #10B98120; color: var(--secondary);">Completed</span>
+                        </div>
+                        <div class="progress-bar mt-4">
+                            <div class="progress-fill" style="width: 60%;"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Renting</span>
+                            <span>Buying</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Templates Page -->
+                <div class="page" id="templates-page">
+                    <div class="flex items-center mb-6">
+                        <button onclick="navigateToPage('dashboard-page')" class="mr-3 text-gray-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">Decision Templates</h1>
+                    </div>
+                    
+                    <div class="card template-card slide-in" onclick="navigateToPage('new-decision-page')">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-briefcase text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Career Decision</h2>
+                                <p class="text-sm text-gray-600">Changing jobs, accepting offers, career pivots</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card template-card slide-in" onclick="navigateToPage('new-decision-page')">
+                        <div class="flex items-start">
+                            <div class="bg-green-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-home text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Housing Decision</h2>
+                                <p class="text-sm text-gray-600">Buying, renting, moving locations</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card template-card slide-in" onclick="navigateToPage('new-decision-page')">
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-heart text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Relationship Decision</h2>
+                                <p class="text-sm text-gray-600">Personal choices involving relationships</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card template-card slide-in" onclick="navigateToPage('new-decision-page')">
+                        <div class="flex items-start">
+                            <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Financial Decision</h2>
+                                <p class="text-sm text-gray-600">Major purchases, investments, budgeting</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card template-card slide-in" onclick="navigateToPage('new-decision-page')">
+                        <div class="flex items-start">
+                            <div class="bg-red-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-plus-circle text-red-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Custom Decision</h2>
+                                <p class="text-sm text-gray-600">Create your own decision from scratch</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Decision Page -->
+                <div class="page" id="new-decision-page">
+                    <div class="flex items-center mb-6">
+                        <button onclick="navigateToPage('templates-page')" class="mr-3 text-gray-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">New Decision</h1>
+                    </div>
+                    
+                    <div class="card slide-in">
+                        <h2 class="text-lg font-semibold mb-4">Decision Title</h2>
+                        <input type="text" placeholder="e.g. Should I change jobs?" class="w-full p-3 border border-gray-200 rounded-lg mb-4 bg-transparent">
+                        
+                        <h2 class="text-lg font-semibold mb-4">Options</h2>
+                        <div class="mb-4">
+                            <input type="text" placeholder="Option 1 (e.g. Stay at current job)" class="w-full p-3 border border-gray-200 rounded-lg mb-2 bg-transparent">
+                            <input type="text" placeholder="Option 2 (e.g. Accept new offer)" class="w-full p-3 border border-gray-200 rounded-lg bg-transparent">
+                        </div>
+                        
+                        <button class="text-sm text-blue-500 font-semibold mb-6">
+                            <i class="fas fa-plus mr-1"></i> Add another option
+                        </button>
+                        
+                        <div class="privacy-notice">
+                            <i class="fas fa-lock mr-2"></i> Your data remains private. All decisions are stored only on your device.
+                        </div>
+                        
+                        <div class="mt-6">
+                            <div class="btn-primary" onclick="navigateToPage('dimensions-page')">Continue</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dimensions Page -->
+                <div class="page" id="dimensions-page">
+                    <div class="flex items-center mb-6">
+                        <button onclick="navigateToPage('new-decision-page')" class="mr-3 text-gray-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">Evaluation Criteria</h1>
+                    </div>
+                    
+                    <div class="card slide-in">
+                        <h2 class="text-lg font-semibold mb-4">Select Evaluation Criteria</h2>
+                        <p class="text-sm text-gray-600 mb-4">Choose what matters most to you. These criteria will be used to compare your options.</p>
+                        
+                        <div class="mb-6">
+                            <span class="dimension-pill selected" onclick="togglePill(this)"><i class="fas fa-coins mr-1"></i> Salary</span>
+                            <span class="dimension-pill selected" onclick="togglePill(this)"><i class="fas fa-chart-line mr-1"></i> Growth</span>
+                            <span class="dimension-pill selected" onclick="togglePill(this)"><i class="fas fa-heart mr-1"></i> Happiness</span>
+                            <span class="dimension-pill" onclick="togglePill(this)"><i class="fas fa-balance-scale mr-1"></i> Work-life</span>
+                            <span class="dimension-pill" onclick="togglePill(this)"><i class="fas fa-users mr-1"></i> Culture</span>
+                            <span class="dimension-pill" onclick="togglePill(this)"><i class="fas fa-map-marker-alt mr-1"></i> Commute</span>
+                            <span class="dimension-pill" onclick="togglePill(this)"><i class="fas fa-shield-alt mr-1"></i> Job Security</span>
+                            <span class="dimension-pill" onclick="togglePill(this)"><i class="fas fa-graduation-cap mr-1"></i> Learning</span>
+                        </div>
+                        
+                        <button class="text-sm text-blue-500 font-semibold mb-6">
+                            <i class="fas fa-plus mr-1"></i> Add custom criteria
+                        </button>
+                        
+                        <div class="btn-primary" onclick="navigateToPage('weight-page')">Continue</div>
+                    </div>
+                </div>
+                
+                <!-- Weight Page -->
+                <div class="page" id="weight-page">
+                    <div class="flex items-center mb-6">
+                        <button onclick="navigateToPage('dimensions-page')" class="mr-3 text-gray-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">Set Importance</h1>
+                    </div>
+                    
+                    <div class="card slide-in">
+                        <h2 class="text-lg font-semibold mb-4">Assign Weight to Criteria</h2>
+                        <p class="text-sm text-gray-600 mb-6">Drag sliders to assign importance (0-100%) to each criterion. This reflects their relative importance in your decision.</p>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <span><i class="fas fa-coins mr-2 text-blue-500"></i> Salary</span>
+                                <span class="font-semibold">70%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="70" class="slider">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <span><i class="fas fa-chart-line mr-2 text-blue-500"></i> Growth</span>
+                                <span class="font-semibold">85%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="85" class="slider">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <span><i class="fas fa-heart mr-2 text-blue-500"></i> Happiness</span>
+                                <span class="font-semibold">65%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="65" class="slider">
+                        </div>
+                        
+                        <div class="btn-primary" onclick="navigateToPage('score-page')">Continue</div>
+                    </div>
+                </div>
+                
+                <!-- Score Page -->
+                <div class="page" id="score-page">
+                    <div class="flex items-center mb-6">
+                        <button onclick="navigateToPage('weight-page')" class="mr-3 text-gray-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">Score Options</h1>
+                    </div>
+                    
+                    <div class="card slide-in">
+                        <h2 class="text-lg font-semibold mb-4">Score Each Option</h2>
+                        <p class="text-sm text-gray-600 mb-6">Rate each option against the criteria (1-10 scale).</p>
+                        
+                        <div class="mb-8">
+                            <h3 class="font-semibold mb-3 flex items-center"><i class="fas fa-coins mr-2 text-blue-500"></i> Salary</h3>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm">Stay at current job</span>
+                                <div class="flex">
+                                    <div class="score-btn" data-value="1">1</div><div class="score-btn" data-value="2">2</div><div class="score-btn" data-value="3">3</div><div class="score-btn selected" data-value="4">4</div><div class="score-btn" data-value="5">5</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Accept new offer</span>
+                                <div class="flex">
+                                    <div class="score-btn" data-value="6">6</div><div class="score-btn" data-value="7">7</div><div class="score-btn selected" data-value="8">8</div><div class="score-btn" data-value="9">9</div><div class="score-btn" data-value="10">10</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <h3 class="font-semibold mb-3 flex items-center"><i class="fas fa-chart-line mr-2 text-blue-500"></i> Growth</h3>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm">Stay at current job</span>
+                                <div class="flex">
+                                     <div class="score-btn" data-value="1">1</div><div class="score-btn" data-value="2">2</div><div class="score-btn" data-value="3">3</div><div class="score-btn" data-value="4">4</div><div class="score-btn selected" data-value="5">5</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Accept new offer</span>
+                                <div class="flex">
+                                    <div class="score-btn" data-value="6">6</div><div class="score-btn" data-value="7">7</div><div class="score-btn" data-value="8">8</div><div class="score-btn selected" data-value="9">9</div><div class="score-btn" data-value="10">10</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-primary" onclick="generateReport()">Generate Analysis Report</div>
+                    </div>
+                </div>
+                
+                <!-- Report Page -->
+                <div class="page" id="report-page">
+                    <div class="flex items-center mb-6">
+                        <button onclick="navigateToPage('dashboard-page')" class="mr-3 text-gray-500">
+                             <i class="fas fa-times"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">Decision Report</h1>
+                    </div>
+                    
+                    <div class="card slide-in">
+                        <h2 class="text-lg font-semibold mb-2">Should I change jobs?</h2>
+                        <p class="text-sm text-gray-500 mb-6">Generated on September 1, 2025</p>
+                        
+                        <div class="bg-gray-50 dark:bg-slate-600 p-4 rounded-lg mb-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="option-tag option-1">Stay at current job</span>
+                                    <span class="text-xl font-bold">72.5</span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs text-gray-500">Score difference</span>
+                                    <div class="text-lg font-bold text-blue-600">12.5</div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="option-tag option-2">Accept new offer</span>
+                                    <span class="text-xl font-bold">85.0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-4">Criteria Comparison</h3>
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-4">Key Insights</h3>
+                        <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                            <p class="text-sm text-blue-800">Based on your weight assignments, the new offer significantly outperforms your current job in <strong>Salary</strong> and <strong>Growth</strong> but is slightly weaker in <strong>Work-life balance</strong>. If career advancement is your current priority, the new position appears to be the better choice.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="btn-outline">
+                                <i class="fas fa-download mr-2"></i> Export
+                            </button>
+                            <button class="btn-primary">
+                                <i class="fas fa-save mr-2"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archive Page -->
+                <div class="page" id="archive-page">
+                    <h1 class="text-xl font-semibold mb-6">Archived Decisions</h1>
+                    <div class="card archived-card" onclick="navigateToPage('report-page')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold">Choose a University</h3>
+                                <p class="text-sm text-gray-500">8 months ago</p>
+                            </div>
+                             <span class="text-xs font-semibold py-1 px-2 rounded-full" style="background-color: #64748B20; color: var(--text-secondary);">Archived</span>
+                        </div>
+                    </div>
+                     <div class="card archived-card" onclick="navigateToPage('report-page')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold">Which car to buy?</h3>
+                                <p class="text-sm text-gray-500">1 year ago</p>
+                            </div>
+                             <span class="text-xs font-semibold py-1 px-2 rounded-full" style="background-color: #64748B20; color: var(--text-secondary);">Archived</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Page -->
+                <div class="page" id="insights-page">
+                     <h1 class="text-xl font-semibold mb-6">Your Decision Insights</h1>
+                     <div class="card">
+                         <h2 class="font-semibold mb-2">Most Valued Criteria</h2>
+                         <p class="text-sm text-gray-500 mb-4">What you prioritize most across all decisions.</p>
+                         <div class="chart-container">
+                             <canvas id="criteriaBarChart"></canvas>
+                         </div>
+                     </div>
+                      <div class="card">
+                         <h2 class="font-semibold mb-2">Decision Categories</h2>
+                          <p class="text-sm text-gray-500 mb-4">A breakdown of your decision types.</p>
+                         <div class="chart-container">
+                             <canvas id="categoryDonutChart"></canvas>
+                         </div>
+                     </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div class="page" id="settings-page">
+                    <h1 class="text-xl font-semibold mb-6">Settings</h1>
+                    <div class="card">
+                        <h2 class="font-semibold mb-4">Appearance</h2>
+                        <div class="flex justify-between items-center">
+                            <span>Dark Mode</span>
+                            <div class="toggle-switch" onclick="toggleTheme(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2 class="font-semibold mb-4">Data Management</h2>
+                         <div class="space-y-3">
+                             <button class="btn-outline w-full"><i class="fas fa-file-export mr-2"></i> Export All Data</button>
+                             <button class="w-full text-center py-3 rounded-lg text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-colors"><i class="fas fa-trash-alt mr-2"></i> Clear All Data</button>
+                         </div>
+                    </div>
+                     <div class="card">
+                        <h2 class="font-semibold mb-4">About</h2>
+                        <div class="flex justify-between items-center text-sm text-gray-500">
+                           <span>App Version</span>
+                           <span>1.0.0</span>
+                        </div>
+                         <hr class="my-3 border-gray-200 dark:border-slate-600">
+                         <div class="flex justify-between items-center text-sm">
+                           <span>Privacy Policy</span>
+                           <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="nav-bar">
+                <div class="nav-item active" onclick="handleNav(this, 'dashboard-page')">
+                    <div class="nav-icon"><i class="fas fa-home"></i></div>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" onclick="handleNav(this, 'archive-page')">
+                    <div class="nav-icon"><i class="fas fa-archive"></i></div>
+                    <span>Archive</span>
+                </div>
+                <div class="nav-item" style="opacity: 0;">
+                    <!-- Spacer -->
+                </div>
+                <div class="nav-item" onclick="handleNav(this, 'insights-page')">
+                    <div class="nav-icon"><i class="fas fa-chart-pie"></i></div>
+                    <span>Insights</span>
+                </div>
+                <div class="nav-item" onclick="handleNav(this, 'settings-page')">
+                    <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                    <span>Settings</span>
+                </div>
+            </div>
+            
+            <!-- Floating Button -->
+            <div class="floating-button" onclick="navigateToPage('templates-page')">
+                <i class="fas fa-plus"></i>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chartInstances = {};
+
+        // Main navigation function
+        function navigateToPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            const targetPage = document.getElementById(pageId);
+            if(targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // Render charts if navigating to a page that contains them
+            setTimeout(() => {
+                if (pageId === 'report-page') {
+                    createRadarChart();
+                }
+                if (pageId === 'insights-page') {
+                    createBarChart();
+                    createDonutChart();
+                }
+            }, 100); // Small delay for page transition animation
+        }
+        
+        // Handle bottom nav bar clicks
+        function handleNav(navElement, pageId) {
+            // Update active state on nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            navElement.classList.add('active');
+            
+            navigateToPage(pageId);
+        }
+        
+        // Toggle dimension pills
+        function togglePill(element) {
+            element.classList.toggle('selected');
+        }
+
+        // Toggle theme
+        function toggleTheme(element) {
+            element.classList.toggle('active');
+            document.getElementById('screen-container').classList.toggle('dark-theme');
+        }
+        
+        // Score selection
+        document.querySelectorAll('.score-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const parent = this.parentElement;
+                parent.querySelectorAll('.score-btn').forEach(sibling => {
+                    sibling.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+        
+        // Generate report
+        function generateReport() {
+            navigateToPage('report-page');
+        }
+        
+        function destroyChart(chartId) {
+            if (chartInstances[chartId]) {
+                chartInstances[chartId].destroy();
+                delete chartInstances[chartId];
+            }
+        }
+        
+        // Create radar chart
+        function createRadarChart() {
+            const chartId = 'radarChart';
+            destroyChart(chartId);
+            const ctx = document.getElementById(chartId).getContext('2d');
+            
+            chartInstances[chartId] = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Salary', 'Growth', 'Happiness', 'Work-life', 'Culture', 'Commute'],
+                    datasets: [
+                        {
+                            label: 'Current job',
+                            data: [7, 6, 8, 9, 9, 8],
+                            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                        },
+                        {
+                            label: 'New offer',
+                            data: [9, 9, 7, 7, 7, 5],
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { r: { suggestedMin: 0, suggestedMax: 10 } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Create Bar Chart for Insights
+        function createBarChart() {
+            const chartId = 'criteriaBarChart';
+            destroyChart(chartId);
+            const ctx = document.getElementById(chartId).getContext('2d');
+            chartInstances[chartId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Salary', 'Growth', 'Happiness', 'Work-life', 'Culture'],
+                    datasets: [{
+                        label: 'Average Importance',
+                        data: [85, 80, 75, 60, 50],
+                        backgroundColor: [
+                            'rgba(37, 99, 235, 0.7)',
+                            'rgba(30, 64, 175, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Create Donut Chart for Insights
+        function createDonutChart() {
+            const chartId = 'categoryDonutChart';
+            destroyChart(chartId);
+            const ctx = document.getElementById(chartId).getContext('2d');
+            chartInstances[chartId] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Career', 'Housing', 'Financial', 'Personal'],
+                    datasets: [{
+                        data: [4, 2, 3, 1],
+                        backgroundColor: [
+                            'rgba(37, 99, 235, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(168, 85, 247, 1)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            navigateToPage('dashboard-page');
+        });
+    </script>
+</body>
+</html>
